@@ -42,28 +42,28 @@ General use can be tried through the following examples:
 	```php
   use vadgab\Yii2BorgunApi\BorgunApi;    
   
-	$payment = new BorgunApi;
+  $payment = new BorgunApi;
    
-	$payment->test = 1;
+  $payment->test = 1;
 	
 	/* merchant variables */
-	$payment->secretKey = "cdedfbb6ecab4a4994ac880144dd92dc";
-	$payment->merchantid = "9256684";
-	$payment->paymentgatewayid = "471";
+  $payment->secretKey = "cdedfbb6ecab4a4994ac880144dd92dc";
+  $payment->merchantid = "9256684";
+  $payment->paymentgatewayid = "471";
 	
 	/* payment variables */
   $payment->orderid = "ORDER123001";
-	$payment->currency = "HUF";
+  $payment->currency = "HUF";
   $payment->language = "HU";
-	$payment->buyername = "Gábor Vadász";
+  $payment->buyername = "Gábor Vadász";
   $payment->buyeremail = "vadgab@allstar.hu";
   $payment->amount = "110";
   
   $payment->item['description'] = "Teszt product";
   $payment->item['count'] = "1";
-	$payment->item['unitamount'] = "110";
+  $payment->item['unitamount'] = "110";
   $payment->item['amount'] = "110";
-	$payment->addItem();
+  $payment->addItem();
   
   /* Send payment */
   $payment->sendPayment();
