@@ -14,6 +14,9 @@ class BorgunApi
     public $bPaymentModules = "site";
 
     /* send params borgun */
+    public $test = "0";
+    public $payURL = "";
+    public $secretKey = "";
     public $merchantid = "";
     public $paymentgatewayid = "";
     public $checkhash = "";
@@ -30,29 +33,33 @@ class BorgunApi
     public $merchantlogo = "https://www.b-payment.hu/docs/images/logo.jpg";
     public $merchantemail = "";
 
+
     private $postData = array();
 
-    const URL_MAIN_TEST = "https://www.szamlazz.hu/szamla/";
-    const URL_MAIN_LIVE = "https://www.szamlazz.hu/szamla/";
-    const RETURN_SUCCESS = "/{bPaymentModules}/success";
-    const RETURN_SUCCESS_SERVER = "/{bPaymentModules}/successserver";
-    const RETURN_CANCEL = "/{bPaymentModules}/cancel";
-    const RETURN_ERROR = "/{bPaymentModules}/error";
+    const URL_MAIN_TEST = "https://test.borgun.is/SecurePay/default.aspx";
+    const URL_MAIN_LIVE = "https://securepay.borgun.is/SecurePay/default.aspx";
+    const RETURN_SUCCESS = "/{bPaymentModules}/paysuccess";
+    const RETURN_SUCCESS_SERVER = "/{bPaymentModules}/paysuccessserver";
+    const RETURN_CANCEL = "/{bPaymentModules}/paycancel";
+    const RETURN_ERROR = "/{bPaymentModules}/payerror";
 
 
     public function sendPayment(){
 
+        if($this->test == 1)$this->payURL = self::URL_MAIN_TEST;
+        else $this->payURL = self::URL_MAIN_LIVE;
+
         /* MAIN DATA */
         $this->post_data['merchantid'] = $this->merchantid;
         $this->post_data['paymentgatewayid'] = $this->paymentgatewayid;
-        $this->post_data['checkhash'] = $this->checkhash;
+        $this->post_data['checkhash'] = self::generateHashHmac();
         $this->post_data['orderid'] = $this->orderid;
         $this->post_data['currency'] = $this->currency;
         $this->post_data['language'] = $this->language;
         $this->post_data['buyername'] = $this->buyername;
         $this->post_data['buyeremail'] = $this->buyeremail;
         $this->post_data['amount'] = $this->amount;
-        $this->post_data['merchantid'] = $this->merchantid;
+
 
         /* items add post data */
         $count = 0;
@@ -66,25 +73,103 @@ class BorgunApi
         $this->post_data['returnurlsuccess'] = Yii::$app->params['base_url'].str_replace("{bPaymentModules}",$this->bPaymentModules,self::RETURN_SUCCESS);
         $this->post_data['returnurlcancel'] = Yii::$app->params['base_url'].str_replace("{bPaymentModules}",$this->bPaymentModules,self::RETURN_CANCEL);
         $this->post_data['returnurlerror'] = Yii::$app->params['base_url'].str_replace("{bPaymentModules}",$this->bPaymentModules,self::RETURN_ERROR);
+        $this->post_data['returnurlsuccessserver'] = Yii::$app->params['base_url'].str_replace("{bPaymentModules}",$this->bPaymentModules,self::RETURN_SUCCESS_SERVER);
+
+        $fields_string = http_build_query($this->post_data);
+
+        //open connection
+        /*$ch = curl_init();
+
+        //set the url, number of POST vars, POST data
+        curl_setopt($ch,CURLOPT_URL, self::URL_MAIN_TEST);
+        curl_setopt($ch,CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch,CURLOPT_POST, true);
+        curl_setopt($ch,CURLOPT_POSTFIELDS, $fields_string);
+        curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, Array("Content-Type:application/x-www-form-urlencoded"));
+        curl_setopt($ch,CURLOPT_USERAGENT,'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13');
+
+
+        //So that curl_exec returns the contents of the cURL; rather than echoing it
+        curl_setopt($ch,CURLOPT_RETURNTRANSFER, true);
+
+        //execute post
+        $result = curl_exec($ch);
+        $headers = explode("\n",$result);
+        // if there is no redirection this will be the final url
+        $redir = self::URL_MAIN_TEST;
+        // loop through the headers and check for a Location: str
+        $j = count($headers);
+        for($i = 0; $i < $j; $i++){
+        // if we find the Location header strip it and fill the redir var
+        if(strpos($headers[$i],"Location:") !== false){
+                $redir = trim(str_replace("Location:","",$headers[$i]));
+                break;
+            }
+        }
+        // do whatever you want with the result
+        echo $redir;  */
+
+
+         //self::redirect_post(self::URL_MAIN_TEST,$this->post_data);
+
+        $out ='<form id="payForm" action="'.$this->payURL.'" method="post">';
+
+            foreach ($this->post_data as $a => $b) {
+                $out.= '<input type="hidden" name="'.htmlentities($a).'" value="'.htmlentities($b).'">';
+            }
+        $out.= '</form>';
+        $out.= '<script type="text/javascript">';
+        $out.= '    document.getElementById("payForm").submit();';
+        $out.= '</script>';
+
+        echo $out;
+
+
+
+
 
 
     }
 
     public function addItem(){
-
-        /* MAIN DATA */
-        $this->item['description'] = '';
-        $this->item['count'] = '';
-        $this->item['unitamount'] = '';
-        $this->item['amount'] = '';
         /* add items schema */
         $this->items[] = $this->item;
 
     }
 
+     public function generateHashHmac(){
+        $message = utf8_encode($this->merchantid.'|'.Yii::$app->params['base_url'].str_replace("{bPaymentModules}",$this->bPaymentModules,self::RETURN_SUCCESS).'|'.Yii::$app->params['base_url'].str_replace("{bPaymentModules}",$this->bPaymentModules,self::RETURN_SUCCESS_SERVER).'|'.$this->orderid.'|'.$this->amount.'|'.$this->currency);
+        return  hash_hmac('sha256', $message, $this->secretKey);
+    }
 
 
+    public function redirect_post($url, array $data, array $headers = null) {
+    $params = [
+        'http' => [
+            'method' => 'POST',
+            'content' => http_build_query($data)
+        ]
+    ];
 
+    if (!is_null($headers)) {
+        $params['http']['header'] = '';
+        foreach ($headers as $k => $v) {
+            $params['http']['header'] .= "$k: $v\n";
+        }
+    }
+
+    $ctx = stream_context_create($params);
+    $fp = @fopen($url, 'rb', true, $ctx);
+
+    if ($fp) {
+        echo @stream_get_contents($fp);
+        die();
+    } else {
+        // Error
+        throw new Exception("Error loading '$url', $php_errormsg");
+    }
+}
 
 
 
