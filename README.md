@@ -43,7 +43,7 @@ General use can be tried through the following examples:
   use vadgab\Yii2BorgunApi\BorgunApi;    
   
 	$payment = new BorgunApi;
-  
+   
 	$payment->test = 1;
 	
 	/* merchant variables */
