@@ -6,15 +6,13 @@ use Yii;
 
 
 
-
-
 class BorgunApi
 {
 
     public $bPaymentModules = "site";
 
     /* send params borgun */
-    public $test = "0";
+    public $test = "0";  
     public $payURL = "";
     public $secretKey = "";
     public $merchantid = "";
@@ -77,44 +75,7 @@ class BorgunApi
 
         $fields_string = http_build_query($this->post_data);
 
-        //open connection
-        /*$ch = curl_init();
-
-        //set the url, number of POST vars, POST data
-        curl_setopt($ch,CURLOPT_URL, self::URL_MAIN_TEST);
-        curl_setopt($ch,CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch,CURLOPT_POST, true);
-        curl_setopt($ch,CURLOPT_POSTFIELDS, $fields_string);
-        curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, Array("Content-Type:application/x-www-form-urlencoded"));
-        curl_setopt($ch,CURLOPT_USERAGENT,'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13');
-
-
-        //So that curl_exec returns the contents of the cURL; rather than echoing it
-        curl_setopt($ch,CURLOPT_RETURNTRANSFER, true);
-
-        //execute post
-        $result = curl_exec($ch);
-        $headers = explode("\n",$result);
-        // if there is no redirection this will be the final url
-        $redir = self::URL_MAIN_TEST;
-        // loop through the headers and check for a Location: str
-        $j = count($headers);
-        for($i = 0; $i < $j; $i++){
-        // if we find the Location header strip it and fill the redir var
-        if(strpos($headers[$i],"Location:") !== false){
-                $redir = trim(str_replace("Location:","",$headers[$i]));
-                break;
-            }
-        }
-        // do whatever you want with the result
-        echo $redir;  */
-
-
-         //self::redirect_post(self::URL_MAIN_TEST,$this->post_data);
-
         $out ='<form id="payForm" action="'.$this->payURL.'" method="post">';
-
             foreach ($this->post_data as $a => $b) {
                 $out.= '<input type="hidden" name="'.htmlentities($a).'" value="'.htmlentities($b).'">';
             }
@@ -122,57 +83,15 @@ class BorgunApi
         $out.= '<script type="text/javascript">';
         $out.= '    document.getElementById("payForm").submit();';
         $out.= '</script>';
-
         echo $out;
 
-
-
-
-
-
     }
 
-    public function addItem(){
-        /* add items schema */
-        $this->items[] = $this->item;
-
-    }
 
      public function generateHashHmac(){
         $message = utf8_encode($this->merchantid.'|'.Yii::$app->params['base_url'].str_replace("{bPaymentModules}",$this->bPaymentModules,self::RETURN_SUCCESS).'|'.Yii::$app->params['base_url'].str_replace("{bPaymentModules}",$this->bPaymentModules,self::RETURN_SUCCESS_SERVER).'|'.$this->orderid.'|'.$this->amount.'|'.$this->currency);
         return  hash_hmac('sha256', $message, $this->secretKey);
     }
-
-
-    public function redirect_post($url, array $data, array $headers = null) {
-    $params = [
-        'http' => [
-            'method' => 'POST',
-            'content' => http_build_query($data)
-        ]
-    ];
-
-    if (!is_null($headers)) {
-        $params['http']['header'] = '';
-        foreach ($headers as $k => $v) {
-            $params['http']['header'] .= "$k: $v\n";
-        }
-    }
-
-    $ctx = stream_context_create($params);
-    $fp = @fopen($url, 'rb', true, $ctx);
-
-    if ($fp) {
-        echo @stream_get_contents($fp);
-        die();
-    } else {
-        // Error
-        throw new Exception("Error loading '$url', $php_errormsg");
-    }
-}
-
-
-
-
+ 
 }
 ?>
