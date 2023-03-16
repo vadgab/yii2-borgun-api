@@ -87,6 +87,12 @@ class BorgunApi
 
     }
 
+    public function addItem(){
+        /* add items schema */
+        $this->items[] = $this->item;
+
+    }
+
 
      public function generateHashHmac(){
         $message = utf8_encode($this->merchantid.'|'.Yii::$app->params['base_url'].str_replace("{bPaymentModules}",$this->bPaymentModules,self::RETURN_SUCCESS).'|'.Yii::$app->params['base_url'].str_replace("{bPaymentModules}",$this->bPaymentModules,self::RETURN_SUCCESS_SERVER).'|'.$this->orderid.'|'.$this->amount.'|'.$this->currency);
