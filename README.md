@@ -4,7 +4,7 @@
     </a>
     <h1 align="center">Yii2 Borgun / saltPay Api Extension</h1>
     <br>
-</p>
+</p> 
 
 
 
@@ -20,7 +20,7 @@ composer require --prefer-dist vadgab/yii2-borgun-api
 
 Settings:
 
-​	config/params.php
+​	config/params.php 
 
 ```
 return [
